@@ -1,76 +1,188 @@
 import sqlite3
 from os.path import exists
+from extract_kaggle_data import get_tournaments, get_teams, get_players
 
-if exists('vct_data.db'):
-    raise RuntimeError('Tried to initialise database which already exists.')
+def create_vct_tables(curs:sqlite3.Cursor) -> None:
 
-# Create db connection and cursor object
-conn = sqlite3.connect('vct_data.db')
-curs = conn.cursor()
+    # Enable FOREIGN KEYS constraints
+    curs.execute('PRAGMA foreign_keys = 1;')
 
-# Enable FOREIGN KEYS constraints
-curs.execute('PRAGMA foreign_keys = 1;')
+    # Tournaments
+    curs.execute('''
+                CREATE TABLE tournaments (
+                    id      INTEGER PRIMARY KEY, 
+                    name    TEXT, 
+                    year    INTEGER,
+                    region  INTEGER REFERENCES regions(id)
+                );
+                ''')
+    # Regions
+    curs.execute('''
+                CREATE TABLE regions (
+                    id      INTEGER PRIMARY KEY,
+                    name    TEXT
+                );
+                ''')
+    # Teams
+    curs.execute('''
+                CREATE TABLE teams (
+                    id          INTEGER PRIMARY KEY, 
+                    name        TEXT, 
+                    short_name  TEXT
+                );
+                ''')
+    # Players
+    curs.execute('''
+                CREATE TABLE players (
+                    id              INTEGER PRIMARY KEY, 
+                    name            TEXT,
+                    current_team    INTEGER REFERENCES teams(id)
+                );
+                ''')
+    # Patches
+    curs.execute('''
+                CREATE TABLE patches (
+                    id              INTEGER PRIMARY KEY,
+                    patch_number    TEXT,
+                    release_date    TEXT,
+                    map_1           INTEGER REFERENCES maps(id),
+                    map_2           INTEGER REFERENCES maps(id),
+                    map_3           INTEGER REFERENCES maps(id),
+                    map_4           INTEGER REFERENCES maps(id),
+                    map_5           INTEGER REFERENCES maps(id),
+                    map_6           INTEGER REFERENCES maps(id),
+                    map_7           INTEGER REFERENCES maps(id)
+                );
+                ''')
+    # Maps
+    curs.execute('''
+                CREATE TABLE maps (
+                    id                  INTEGER PRIMARY KEY,
+                    name                TEXT,
+                    in_current_patch    INTEGER
+                );
+                ''')
+    # Agents
+    curs.execute('''
+                CREATE TABLE agents (
+                    id          INTEGER PRIMARY KEY,
+                    name        TEXT,
+                    class_id    INTEGER,
+                    class       TEXT,
+                    patch_added INTEGER REFERENCES patches(id)
+                );
+                ''')
+    # Matches
+    curs.execute('''
+                CREATE TABLE matches (
+                    id                  INTEGER PRIMARY KEY,
+                    tournament          INTEGER REFERENCES tournaments(id),
+                    match_date          TEXT,
+                    team_a              INTEGER REFERENCES teams(id),
+                    team_b              INTEGER REFERENCES teams(id),
+                    patch               TEXT,
+                    best_of             INTEGER,
+                    veto_order_a_first  INTEGER,
+                    team_a_ban_1        INTEGER REFERENCES maps(id),
+                    team_b_ban_1        INTEGER REFERENCES maps(id),
+                    team_a_pick_1       INTEGER REFERENCES maps(id),
+                    team_b_pick_1       INTEGER REFERENCES maps(id),
+                    team_a_ban_2        INTEGER REFERENCES maps(id),
+                    team_b_ban_2        INTEGER REFERENCES maps(id),
+                    decider             INTEGER REFERENCES maps(id),
+                    team_a_pick_2       INTEGER REFERENCES maps(id),
+                    team_b_pick_2       INTEGER REFERENCES maps(id)
+                );
+                ''')
+    # Games
+    curs.execute('''
+                CREATE TABLE games (
+                    id                  INTEGER PRIMARY KEY,
+                    match_id            INTEGER REFERENCES matches(id),
+                    map                 INTEGER REFERENCES maps(id),
+                    team_a_score        INTEGER,
+                    team_a_att          INTEGER,
+                    team_a_def          INTEGER,
+                    team_a_ot           INTEGER,
+                    team_b_score        INTEGER,
+                    team_b_att          INTEGER,
+                    team_b_def          INTEGER,
+                    team_b_ot           INTEGER,
+                    a_1_player          INTEGER REFERENCES players(id),
+                    a_2_player          INTEGER REFERENCES players(id),
+                    a_3_player          INTEGER REFERENCES players(id),
+                    a_4_player          INTEGER REFERENCES players(id),
+                    a_5_player          INTEGER REFERENCES players(id),
+                    b_1_player          INTEGER REFERENCES players(id),
+                    b_2_player          INTEGER REFERENCES players(id),
+                    b_3_player          INTEGER REFERENCES players(id),
+                    b_4_player          INTEGER REFERENCES players(id),
+                    b_5_player          INTEGER REFERENCES players(id)
+                );
+                ''')
+    # Player History
+    curs.execute('''
+                 CREATE TABLE player_game_history (
+                    id              INTEGER PRIMARY KEY,
+                    player_id       INTEGER REFERENCES players(id),
+                    game_id         INTEGER REFERENCES games(id),
+                    agent           INTEGER REFERENCES agents(id),
+                    kills           INTEGER,
+                    deaths          INTEGER,
+                    assists         INTEGER,
+                    first_kills     INTEGER,
+                    first_deaths    INTEGER,
+                    vlr_rating      REAL
+                 );
+                 ''')
+    
+    # Commit Changes to DB, print success message and return
+    curs.connection.commit()
+    print("Created tournaments, regions, teams, players, patches, maps, agents, matches, games, and player_game_history tables.")
+    return None
 
-# Tournaments
-curs.execute('CREATE TABLE tournaments (id INTEGER PRIMARY KEY, name TEXT, year INTEGER);')
+def populate_kaggle_data(curs:sqlite3.Cursor) -> None:
+    # Tournaments
+    tournaments = get_tournaments()
+    tournaments.to_sql('tournaments', curs.connection, if_exists='append', index=False)
+    # curs.executemany("INSERT INTO tournaments(id, name, year) VALUES (?,?,?)",list(tournaments.to_records(index=False)))
+    # curs.connection.commit()
+    print("tournaments table populated with kaggle data")
 
-# Players
-curs.execute('CREATE TABLE players (id INTEGER PRIMARY KEY, name TEXT);')
+    # Teams
+    teams = get_teams()
+    # curs.executemany("INSERT INTO teams(id, name, short_name) VALUES (?,?,?)",list(teams.to_records(index=False)))
+    # curs.connection.commit()
+    print(teams.head())
+    teams.to_sql('teams', curs.connection, if_exists='append', index=False)
+    print("teams table populated with kaggle data")
 
-# Teams
-curs.execute('''
-             CREATE TABLE teams (
-                id INTEGER PRIMARY KEY, 
-                name TEXT, 
-                short_name TEXT
-             );
-             ''')
+    # Players
+    players = get_players()
+    # curs.executemany("INSERT INTO players(id, name) VALUES (?, ?)", list(players.to_records(index=False)))
+    # curs.connection.commit()
+    players.to_sql('players', curs.connection, if_exists='append', index=False)
+    print("players table populated with kaggle data")
 
-# Matches
-curs.execute('''
-             CREATE TABLE matches (
-                id INTEGER PRIMARY KEY, 
-                team_a INTEGER REFERENCES teams(id), 
-                team_b INTEGER REFERENCES teams(id),
-                date TEXT, 
-                tournament INTEGER REFERENCES tournaments(id), 
-                patch TEXT
-             );
-             ''')
+    return None
 
-# Games
-curs.execute('''
-             CREATE TABLE games (
-                id              INTEGER PRIMARY KEY,
-                match_id        INTEGER REFERENCES matches(id),
-                map             TEXT,
-                team_a_score    INTEGER,
-                team_a_att      INTEGER,
-                team_a_def      INTEGER,
-                team_a_ot       INTEGER,
-                team_b_score    INTEGER,
-                team_b_att      INTEGER,
-                team_b_def      INTEGER,
-                team_b_ot       INTEGER,
-                a_1_player      INTEGER REFERENCES players(id),
-                a_2_player      INTEGER REFERENCES players(id),
-                a_3_player      INTEGER REFERENCES players(id),
-                a_4_player      INTEGER REFERENCES players(id),
-                a_5_player      INTEGER REFERENCES players(id).
-                b_1_player      INTEGER REFERENCES players(id),
-                b_2_player      INTEGER REFERENCES players(id),
-                b_3_player      INTEGER REFERENCES players(id),
-                b_4_player      INTEGER REFERENCES players(id),
-                b_5_player      INTEGER REFERENCES players(id),
-                a_1_agent       TEXT,
-                a_2_agent       TEXT,
-                a_3_agent       TEXT,
-                a_4_agent       TEXT,
-                a_5_agent       TEXT,
-                b_1_agent       TEXT,
-                b_2_agent       TEXT,
-                b_3_agent       TEXT,
-                b_4_agent       TEXT,
-                b_5_agent       TEXT
-             );
-             ''')
+def init_db() -> None:
+    # Ensure database does not already exist
+    if exists('vct_data.db'):
+        raise RuntimeError('Tried to initialise database which already exists.')
+
+    # Create db connection and cursor object
+    conn = sqlite3.connect('vct_data.db')
+    curs = conn.cursor()
+
+    # Create tables
+    create_vct_tables(curs)
+
+    # Populate from kaggle data
+    populate_kaggle_data(curs)
+
+    # Close database connection
+    conn.close()
+
+if __name__ == '__main__':
+    init_db()

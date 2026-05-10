@@ -1,11 +1,11 @@
 import pandas as pd
-import requests
+import numpy as np
 from bs4 import BeautifulSoup
 
 teams = pd.read_csv('data/all_ids/all_teams_ids.csv')
 team_mappings = pd.read_csv('data/all_ids/all_teams_mapping.csv')
 # tournament_stages = pd.read_csv('data/all_ids/all_tournaments_stages_match_types_ids.csv')
-# players = pd.read_csv('data/all_ids/all_players_ids.csv')
+players = pd.read_csv('data/all_ids/all_players_ids.csv')
 # matches = pd.read_csv('data/all_ids/all_matches_games_ids.csv')
 
 # print('\nTEAMS\n--------------\n')
@@ -45,5 +45,12 @@ team_mappings = pd.read_csv('data/all_ids/all_teams_mapping.csv')
 #     print(f'{r['Full Name']}\t{r['Abbreviated']} ({i})')
 # print(team_mappings_dupes)
 
-team_dupes = teams[teams.duplicated(subset=['Team'], keep=False) == True].sort_values('Team')
-print(team_dupes)
+# team_dupes = teams[teams.duplicated(subset=['Team'], keep=False) == True].sort_values('Team')
+# print(team_dupes)
+
+# print(players[players['Player ID'] <= 0])
+
+print(teams[teams.duplicated(subset=['Team ID'], keep=False)==True])
+
+teams_clean = teams[teams.duplicated(subset=['Team ID'], keep="last")==False]
+print(teams_clean[teams_clean.duplicated(subset=['Team'], keep=False)==True])
