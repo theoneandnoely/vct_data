@@ -50,7 +50,9 @@ players = pd.read_csv('data/all_ids/all_players_ids.csv')
 
 # print(players[players['Player ID'] <= 0])
 
-print(teams[teams.duplicated(subset=['Team ID'], keep=False)==True])
+# print(teams[teams.duplicated(subset=['Team ID'], keep=False)==True])
 
-teams_clean = teams[teams.duplicated(subset=['Team ID'], keep="last")==False]
-print(teams_clean[teams_clean.duplicated(subset=['Team'], keep=False)==True])
+# teams_clean = teams[teams.duplicated(subset=['Team ID'], keep="last")==False]
+# print(teams_clean[teams_clean.duplicated(subset=['Team'], keep=False)==True])
+players.dropna(inplace=True)
+print(players[players.duplicated(['Player ID'], keep=False) == True].sort_values('Player ID'))
