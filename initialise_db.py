@@ -80,7 +80,7 @@ def create_vct_tables(curs:sqlite3.Cursor) -> None:
                     match_date          TEXT,
                     team_a              INTEGER REFERENCES teams(id),
                     team_b              INTEGER REFERENCES teams(id),
-                    patch               TEXT,
+                    patch               INTEGER REFERENCES patches(id),
                     best_of             INTEGER,
                     veto_order_a_first  INTEGER,
                     team_a_ban_1        INTEGER REFERENCES maps(id),
