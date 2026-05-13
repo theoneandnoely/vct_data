@@ -147,7 +147,10 @@ def get_match_data(match_id:int) -> list:
                     'fd_def':int(a_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-ct'}).text),
                     'vlr_rating_tot':float(a_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-both'}).text),
                     'vlr_rating_att':float(a_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-t'}).text),
-                    'vlr_rating_def':float(a_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-ct'}).text)
+                    'vlr_rating_def':float(a_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-ct'}).text),
+                    'acs_tot':int(a_players[i].find_all('td',{'class':'mod-stat'})[1].span.find('span',{'class':'mod-both'}).text),
+                    'acs_att':int(a_players[i].find_all('td',{'class':'mod-stat'})[1].span.find('span',{'class':'mod-t'}).text),
+                    'acs_def':int(a_players[i].find_all('td',{'class':'mod-stat'})[1].span.find('span',{'class':'mod-ct'}).text)
                 }
                 b_player_stat = {
                     'player_id':int(b_players[i].find('td',{'class':'mod-player'}).find('a')['href'].split('/')[2]),
@@ -170,7 +173,10 @@ def get_match_data(match_id:int) -> list:
                     'fd_def':int(b_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-ct'}).text),
                     'vlr_rating_tot':float(b_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-both'}).text),
                     'vlr_rating_att':float(b_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-t'}).text),
-                    'vlr_rating_def':float(b_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-ct'}).text)
+                    'vlr_rating_def':float(b_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-ct'}).text),
+                    'acs_tot':int(b_players[i].find_all('td',{'class':'mod-stat'})[1].span.find('span',{'class':'mod-both'}).text),
+                    'acs_att':int(b_players[i].find_all('td',{'class':'mod-stat'})[1].span.find('span',{'class':'mod-t'}).text),
+                    'acs_def':int(b_players[i].find_all('td',{'class':'mod-stat'})[1].span.find('span',{'class':'mod-ct'}).text)
                 }
                 player_stats.append(a_player_stat)
                 player_stats.append(b_player_stat)
