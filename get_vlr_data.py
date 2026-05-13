@@ -2,6 +2,25 @@ from bs4 import BeautifulSoup
 from time import sleep
 import requests
 
+# def get_map_data(match_id:int, game_id: int) -> dict:
+#     url = f'https://vlr.gg/{str(match_id)}/?game={str(game_id)}&tab=overview/'
+#     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0'}
+
+#     with requests.get(url, headers=headers) as page:
+#         if page.status_code != 200:
+#             raise RuntimeError(f'{url} returned code {page.status_code}')
+#         soup = BeautifulSoup(page.content, 'html.parser')
+    
+#     stats = soup.find('div',{'class':'vm-stats'})
+#     print(stats)
+#     header = soup.find('div',{'class':'vm-stats-game'})
+#     print(header)
+#     teams_divs = header.find_all('div',{'class':'team'})
+#     team_a_score = int(teams_divs[0].find('div', {'class','score'}).text)
+#     team_b_score = int(teams_div[1].find('div',{'class','score'}).text)
+#     map = header.find('div',{'class':'map'}).div.span.text
+#     print(f'{map} ({game_id}): {team_a_score} - {team_b_score}')
+#     return {}
 
 def get_match_data(match_id:int) -> list:
     url = f'https://www.vlr.gg/{str(match_id)}/'
@@ -60,23 +79,57 @@ def get_match_data(match_id:int) -> list:
         else:
             map_veto['decider'] = s.split(' ')[0]
 
-    return [tournament, match_date, team_a, team_b, patch, best_of, map_veto]
+    maps_divs = soup.find_all('div',{'class':'vm-stats-game'})
+    maps = {}
+    for m in maps_divs:
+        data = {
+            'map_name':None,
+            'team_a_score':None,
+            'team_a_att':None,
+            'team_a_def':None,
+            'team_a_ot':None,
+            'team_b_score':None,
+            'team_b_att':None,
+            'team_b_def':None,
+            'team_b_ot':None
+        }
+        if m['data-game-id'] != 'all':
+            game_id = m['data-game-id']
+            data['map_name'] = m.find('div',{'class':'map'}).div.span.text.strip().split('\t')[0]
+
+            team_divs = m.find_all('div',{'class','team'})
+            data['team_a_score'] = int(team_divs[0].find('div',{'class':'score'}).text)
+            data['team_a_att'] = int(team_divs[0].find('span',{'class':'mod-t'}).text)
+            data['team_a_def'] = int(team_divs[0].find('span',{'class':'mod-ct'}).text)
+            data['team_a_ot'] = None if team_divs[0].find('span',{'class':'mod-ot'}) is None else int(team_divs[0].find('span',{'class':'mod-ot'}).text)
+            data['team_b_score'] = int(team_divs[1].find('div',{'class':'score'}).text)
+            data['team_b_att'] = int(team_divs[1].find('span',{'class':'mod-t'}).text)
+            data['team_b_def'] = int(team_divs[1].find('span',{'class':'mod-ct'}).text)
+            data['team_b_ot'] = None if team_divs[1].find('span',{'class':'mod-ot'}) is None else int(team_divs[1].find('span',{'class':'mod-ot'}).text)
+            
+            maps[game_id] = data
+    
+    # print(soup.find_all('div',{'class':'vm-stats-container'}))
+
+    return [tournament, match_date, team_a, team_b, patch, best_of, map_veto, maps]
 
 
 if __name__ == '__main__':
+    # get_map_data(660389, 265488)
+    
     fnc_th = get_match_data(660389) # FNC 1 - 2 TH
     print('660389: FNC 1 - 2 TH')
     for i in fnc_th:
         print(i)
     sleep(1)
 
-    navi_fnc = get_match_data(594757) # NAVI 1 - 2 FNC
-    print('\n594757: NAVI 1 - 2 FNC')
-    for i in navi_fnc:
-        print(i)
-    sleep(1)
+    # navi_fnc = get_match_data(594757) # NAVI 1 - 2 FNC
+    # print('\n594757: NAVI 1 - 2 FNC')
+    # for i in navi_fnc:
+    #     print(i)
+    # sleep(1)
 
-    prx_fnc = get_match_data(498628) # PRX 3 - 1 FNC
-    print('\n498628: PRX 3 - 1 FNC')
-    for i in prx_fnc:
-        print(i)
+    # prx_fnc = get_match_data(498628) # PRX 3 - 1 FNC
+    # print('\n498628: PRX 3 - 1 FNC')
+    # for i in prx_fnc:
+    #     print(i)
