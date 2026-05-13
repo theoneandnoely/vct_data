@@ -173,22 +173,15 @@ def populate_kaggle_data(curs:sqlite3.Cursor) -> None:
     # Tournaments
     tournaments = get_tournaments()
     tournaments.to_sql('tournaments', curs.connection, if_exists='append', index=False)
-    # curs.executemany("INSERT INTO tournaments(id, name, year) VALUES (?,?,?)",list(tournaments.to_records(index=False)))
-    # curs.connection.commit()
     print("tournaments table populated with kaggle data")
 
     # Teams
     teams = get_teams()
-    # curs.executemany("INSERT INTO teams(id, name, short_name) VALUES (?,?,?)",list(teams.to_records(index=False)))
-    # curs.connection.commit()
-    print(teams.head())
     teams.to_sql('teams', curs.connection, if_exists='append', index=False)
     print("teams table populated with kaggle data")
 
     # Players
     players = get_players()
-    # curs.executemany("INSERT INTO players(id, name) VALUES (?, ?)", list(players.to_records(index=False)))
-    # curs.connection.commit()
     players.to_sql('players', curs.connection, if_exists='append', index=False)
     print("players table populated with kaggle data")
 
