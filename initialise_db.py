@@ -212,6 +212,8 @@ def populate_maps(curs:sqlite3.Cursor) -> None:
     sql_query = 'INSERT INTO maps (name) VALUES (?)'
     curs.executemany(sql_query, maps)
     curs.connection.commit()
+
+    print("maps table populated.")
     return None
 
 def init_db() -> None:
