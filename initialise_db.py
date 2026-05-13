@@ -160,7 +160,10 @@ def create_vct_tables(curs:sqlite3.Cursor) -> None:
                     fd_def          INTEGER,
                     vlr_rating_tot  REAL,
                     vlr_rating_att  REAL,
-                    vlr_rating_def  REAL
+                    vlr_rating_def  REAL,
+                    acs_tot         INTEGER,
+                    acs_att         INTEGER,
+                    acs_def         INTEGER
                  );
                  ''')
     
