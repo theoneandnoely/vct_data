@@ -2,6 +2,22 @@ import sqlite3
 from os.path import exists
 from extract_kaggle_data import get_tournaments, get_teams, get_players
 
+def drop_tables(curs:sqlite3.Cursor) -> None:
+    curs.executescript('''
+                       DROP TABLE IF EXISTS tournaments;
+                       DROP TABLE IF EXISTS regions;
+                       DROP TABLE IF EXISTS teams;
+                       DROP TABLE IF EXISTS players;
+                       DROP TABLE IF EXISTS patches;
+                       DROP TABLE IF EXISTS maps;
+                       DROP TABLE IF EXISTS agents;
+                       DROP TABLE IF EXISTS matches;
+                       DROP TABLE IF EXISTS games;
+                       DROP TABLE IF EXISTS player_game_history;
+                        ''')
+    curs.connection.commit()
+    return None
+
 def create_vct_tables(curs:sqlite3.Cursor) -> None:
 
     # Enable FOREIGN KEYS constraints
@@ -135,7 +151,7 @@ def create_vct_tables(curs:sqlite3.Cursor) -> None:
                     deaths_def      INTEGER,
                     assists_tot     INTEGER,
                     assists_att     INTEGER,
-                    assists_tot     INTEGER,
+                    assists_def     INTEGER,
                     first_kills     INTEGER,
                     fk_att          INTEGER,
                     fk_def          INTEGER,
@@ -178,10 +194,40 @@ def populate_kaggle_data(curs:sqlite3.Cursor) -> None:
 
     return None
 
+def populate_maps(curs:sqlite3.Cursor) -> None:
+    maps = [
+        ('Ascent',),
+        ('Bind',),
+        ('Haven',),
+        ('Split',),
+        ('Icebox',),
+        ('Breeze',),
+        ('Fracture',),
+        ('Pearl',),
+        ('Lotus',),
+        ('Sunset',),
+        ('Abyss',),
+        ('Corrode',)
+    ]
+    sql_query = 'INSERT INTO maps (name) VALUES (?)'
+    curs.executemany(sql_query, maps)
+    curs.connection.commit()
+    return None
+
 def init_db() -> None:
     # Ensure database does not already exist
     if exists('vct_data.db'):
-        raise RuntimeError('Tried to initialise database which already exists.')
+        c = input('vct_data.db already exists. Do you want to reset the database? (Y/N)')
+        if c.strip().upper() == 'Y':
+            conn = sqlite3.connect('vct_data.db')
+            curs = conn.cursor()
+            drop_tables(curs)
+            print('Successfully dropped all tables in vct_data.db')
+            conn.close()
+        elif c.strip().upper() == 'N':
+            return None
+        else:
+            raise ValueError(f'"{c}" is not a valid input')
 
     # Create db connection and cursor object
     conn = sqlite3.connect('vct_data.db')
@@ -192,6 +238,9 @@ def init_db() -> None:
 
     # Populate from kaggle data
     populate_kaggle_data(curs)
+
+    # Populate maps
+    populate_maps(curs)
 
     # Close database connection
     conn.close()
