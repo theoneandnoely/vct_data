@@ -103,6 +103,8 @@ def get_match_data(match_id:int) -> list:
             'b_player_4':None,
             'b_player_5':None
         }
+
+        player_stats = []
         
         if m['data-game-id'] != 'all':
             game_id = m['data-game-id']
@@ -124,12 +126,57 @@ def get_match_data(match_id:int) -> list:
             for i in range(len(a_players)):
                 data[f'a_player_{str(i+1)}'] = int(a_players[i].find('td',{'class':'mod-player'}).find('a')['href'].split('/')[2])
                 data[f'b_player_{str(i+1)}'] = int(b_players[i].find('td',{'class':'mod-player'}).find('a')['href'].split('/')[2])
-
+                a_player_stat = {
+                    'player_id':int(a_players[i].find('td',{'class':'mod-player'}).find('a')['href'].split('/')[2]),
+                    'game_id':game_id,
+                    'agent':a_players[i].find('td',{'class':'mod-agents'}).div.span.img['title'],
+                    'kills_tot':int(a_players[i].find('td',{'class':'mod-vlr-kills'}).span.find('span',{'class':'mod-both'}).text),
+                    'kills_att':int(a_players[i].find('td',{'class':'mod-vlr-kills'}).span.find('span',{'class':'mod-t'}).text),
+                    'kills_def':int(a_players[i].find('td',{'class':'mod-vlr-kills'}).span.find('span',{'class':'mod-ct'}).text),
+                    'deaths_tot':int(a_players[i].find('td',{'class':'mod-vlr-deaths'}).span.find('span',{'class':'mod-both'}).text),
+                    'deaths_att':int(a_players[i].find('td',{'class':'mod-vlr-deaths'}).span.find('span',{'class':'mod-t'}).text),
+                    'deaths_def':int(a_players[i].find('td',{'class':'mod-vlr-deaths'}).span.find('span',{'class':'mod-ct'}).text),
+                    'assists_tot':int(a_players[i].find('td',{'class':'mod-vlr-assists'}).span.find('span',{'class':'mod-both'}).text),
+                    'assists_att':int(a_players[i].find('td',{'class':'mod-vlr-assists'}).span.find('span',{'class':'mod-t'}).text),
+                    'assists_def':int(a_players[i].find('td',{'class':'mod-vlr-assists'}).span.find('span',{'class':'mod-ct'}).text),
+                    'first_kills':int(a_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-both'}).text),
+                    'fk_att':int(a_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-t'}).text),
+                    'fk_def':int(a_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-ct'}).text),
+                    'first_deaths':int(a_players[i].find('td',{'class':'mod-fd'}).span.find('span',{'class':'mod-both'}).text),
+                    'fd_att':int(a_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-t'}).text),
+                    'fd_def':int(a_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-ct'}).text),
+                    'vlr_rating_tot':float(a_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-both'}).text),
+                    'vlr_rating_att':float(a_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-t'}).text),
+                    'vlr_rating_def':float(a_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-ct'}).text)
+                }
+                b_player_stat = {
+                    'player_id':int(b_players[i].find('td',{'class':'mod-player'}).find('a')['href'].split('/')[2]),
+                    'game_id':game_id,
+                    'agent':b_players[i].find('td',{'class':'mod-agents'}).div.span.img['title'],
+                    'kills_tot':int(b_players[i].find('td',{'class':'mod-vlr-kills'}).span.find('span',{'class':'mod-both'}).text),
+                    'kills_att':int(b_players[i].find('td',{'class':'mod-vlr-kills'}).span.find('span',{'class':'mod-t'}).text),
+                    'kills_def':int(b_players[i].find('td',{'class':'mod-vlr-kills'}).span.find('span',{'class':'mod-ct'}).text),
+                    'deaths_tot':int(b_players[i].find('td',{'class':'mod-vlr-deaths'}).span.find('span',{'class':'mod-both'}).text),
+                    'deaths_att':int(b_players[i].find('td',{'class':'mod-vlr-deaths'}).span.find('span',{'class':'mod-t'}).text),
+                    'deaths_def':int(b_players[i].find('td',{'class':'mod-vlr-deaths'}).span.find('span',{'class':'mod-ct'}).text),
+                    'assists_tot':int(b_players[i].find('td',{'class':'mod-vlr-assists'}).span.find('span',{'class':'mod-both'}).text),
+                    'assists_att':int(b_players[i].find('td',{'class':'mod-vlr-assists'}).span.find('span',{'class':'mod-t'}).text),
+                    'assists_def':int(b_players[i].find('td',{'class':'mod-vlr-assists'}).span.find('span',{'class':'mod-ct'}).text),
+                    'first_kills':int(b_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-both'}).text),
+                    'fk_att':int(b_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-t'}).text),
+                    'fk_def':int(b_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-ct'}).text),
+                    'first_deaths':int(b_players[i].find('td',{'class':'mod-fd'}).span.find('span',{'class':'mod-both'}).text),
+                    'fd_att':int(b_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-t'}).text),
+                    'fd_def':int(b_players[i].find('td',{'class':'mod-fb'}).span.find('span',{'class':'mod-ct'}).text),
+                    'vlr_rating_tot':float(b_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-both'}).text),
+                    'vlr_rating_att':float(b_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-t'}).text),
+                    'vlr_rating_def':float(b_players[i].find_all('td',{'class':'mod-stat'})[0].span.find('span',{'class':'mod-ct'}).text)
+                }
+                player_stats.append(a_player_stat)
+                player_stats.append(b_player_stat)
             maps[game_id] = data
-    
-    # print(soup.find_all('div',{'class':'vm-stats-container'}))
 
-    return [tournament, match_date, team_a, team_b, patch, best_of, map_veto, maps]
+    return [tournament, match_date, team_a, team_b, patch, best_of, map_veto, maps, player_stats]
 
 
 if __name__ == '__main__':
