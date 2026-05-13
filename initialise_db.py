@@ -127,12 +127,24 @@ def create_vct_tables(curs:sqlite3.Cursor) -> None:
                     player_id       INTEGER REFERENCES players(id),
                     game_id         INTEGER REFERENCES games(id),
                     agent           INTEGER REFERENCES agents(id),
-                    kills           INTEGER,
-                    deaths          INTEGER,
-                    assists         INTEGER,
+                    kills_tot       INTEGER,
+                    kills_att       INTEGER,
+                    kills_def       INTEGER,
+                    deaths_tot      INTEGER,
+                    deaths_att      INTEGER,
+                    deaths_def      INTEGER,
+                    assists_tot     INTEGER,
+                    assists_att     INTEGER,
+                    assists_tot     INTEGER,
                     first_kills     INTEGER,
+                    fk_att          INTEGER,
+                    fk_def          INTEGER,
                     first_deaths    INTEGER,
-                    vlr_rating      REAL
+                    fd_att          INTEGER,
+                    fd_def          INTEGER,
+                    vlr_rating_tot  REAL,
+                    vlr_rating_att  REAL,
+                    vlr_rating_def  REAL
                  );
                  ''')
     
