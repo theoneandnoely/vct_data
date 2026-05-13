@@ -91,8 +91,19 @@ def get_match_data(match_id:int) -> list:
             'team_b_score':None,
             'team_b_att':None,
             'team_b_def':None,
-            'team_b_ot':None
+            'team_b_ot':None,
+            'a_player_1':None,
+            'a_player_2':None,
+            'a_player_3':None,
+            'a_player_4':None,
+            'a_player_5':None,
+            'b_player_1':None,
+            'b_player_2':None,
+            'b_player_3':None,
+            'b_player_4':None,
+            'b_player_5':None
         }
+        
         if m['data-game-id'] != 'all':
             game_id = m['data-game-id']
             data['map_name'] = m.find('div',{'class':'map'}).div.span.text.strip().split('\t')[0]
@@ -107,6 +118,13 @@ def get_match_data(match_id:int) -> list:
             data['team_b_def'] = int(team_divs[1].find('span',{'class':'mod-ct'}).text)
             data['team_b_ot'] = None if team_divs[1].find('span',{'class':'mod-ot'}) is None else int(team_divs[1].find('span',{'class':'mod-ot'}).text)
             
+            tables = m.find_all('table', {'class':'mod-overview'})
+            a_players = tables[0].tbody.find_all('tr')
+            b_players = tables[1].tbody.find_all('tr')
+            for i in range(len(a_players)):
+                data[f'a_player_{str(i+1)}'] = int(a_players[i].find('td',{'class':'mod-player'}).find('a')['href'].split('/')[2])
+                data[f'b_player_{str(i+1)}'] = int(b_players[i].find('td',{'class':'mod-player'}).find('a')['href'].split('/')[2])
+
             maps[game_id] = data
     
     # print(soup.find_all('div',{'class':'vm-stats-container'}))
