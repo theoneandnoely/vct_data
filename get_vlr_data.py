@@ -63,7 +63,7 @@ def get_match_data(match_id:int) -> list:
         'first_pick_short_name':match_header_note.split(' ')[0],
         'first_pick':{'bans':[], 'picks':[]},
         'second_pick':{'bans':[], 'picks':[]},
-        'decider':''
+        'decider':None
     }
     for s in match_header_note.split('; '):
         if s.split(' ')[0] == map_veto['first_pick_short_name']:
