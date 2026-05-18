@@ -83,7 +83,6 @@ def create_vct_tables(curs:sqlite3.Cursor) -> None:
                 CREATE TABLE agents (
                     id          INTEGER PRIMARY KEY,
                     name        TEXT,
-                    class_id    INTEGER,
                     class       TEXT,
                     patch_added INTEGER REFERENCES patches(id)
                 );
@@ -139,7 +138,6 @@ def create_vct_tables(curs:sqlite3.Cursor) -> None:
     # Player History
     curs.execute('''
                  CREATE TABLE player_game_history (
-                    id              INTEGER PRIMARY KEY,
                     player_id       INTEGER REFERENCES players(id),
                     game_id         INTEGER REFERENCES games(id),
                     agent           INTEGER REFERENCES agents(id),
@@ -163,7 +161,8 @@ def create_vct_tables(curs:sqlite3.Cursor) -> None:
                     vlr_rating_def  REAL,
                     acs_tot         INTEGER,
                     acs_att         INTEGER,
-                    acs_def         INTEGER
+                    acs_def         INTEGER,
+                    PRIMARY KEY (player_id, game_id) -- composite key to ensure uniqueness
                  );
                  ''')
     
@@ -212,6 +211,45 @@ def populate_maps(curs:sqlite3.Cursor) -> None:
     print("maps table populated.")
     return None
 
+def populate_agents(curs:sqlite3.Cursor) -> None:
+    agents = [
+        ('Astra','Controller'),
+        ('Breach','Initiator'),
+        ('Brimstone','Controller'),
+        ('Chamber','Sentinel'),
+        ('Clove','Controller'),
+        ('Cypher','Sentinel'),
+        ('Deadlock','Sentinel'),
+        ('Fade','Initiator'),
+        ('Gekko','Initiator'),
+        ('Harbor','Controller'),
+        ('Iso','Duelist'),
+        ('Jett','Duelist'),
+        ('Kayo','Initiator'),
+        ('Killjoy','Sentinel'),
+        ('Miks','Controller'),
+        ('Neon','Duelist'),
+        ('Omen','Controller'),
+        ('Pheonix','Duelist'),
+        ('Raze','Duelist'),
+        ('Reyna','Duelist'),
+        ('Sage','Sentinel'),
+        ('Skye','Initiator'),
+        ('Sova','Initiator'),
+        ('Tejo','Initiator'),
+        ('Veto','Sentinel'),
+        ('Viper','Controller'),
+        ('Vyse','Sentinel'),
+        ('Waylay','Duelist'),
+        ('Yoru','Duelist')
+    ]
+    sql_query = 'INSERT INTO agents (name, class) VALUES (?, ?)'
+    curs.executemany(sql_query, agents)
+    curs.connection.commit()
+
+    print('Agents table populated.')
+    return None
+
 def init_db() -> None:
     # Ensure database does not already exist
     if exists('vct_data.db'):
@@ -234,11 +272,14 @@ def init_db() -> None:
     # Create tables
     create_vct_tables(curs)
 
-    # Populate from kaggle data
+    # Populate tournaments, teams, and players from kaggle data
     populate_kaggle_data(curs)
 
     # Populate maps
     populate_maps(curs)
+
+    # Populate agents
+    populate_agents(curs)
 
     # Close database connection
     conn.close()
