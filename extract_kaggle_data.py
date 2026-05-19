@@ -3,7 +3,7 @@ import pandas as pd
 def get_tournaments() -> pd.DataFrame:
     df = pd.read_csv('data/all_ids/all_tournaments_stages_match_types_ids.csv')
     df = df[['Tournament ID', 'Tournament', 'Year']].drop_duplicates()
-    df.rename(columns={'Tournament ID':'id', 'Tournament':'name', 'Year':'year'}, inplace=True)
+    df.rename(columns={'Tournament ID':'tournament_id', 'Tournament':'name', 'Year':'year'}, inplace=True)
     return df
 
 def match_abbreviation(team:str, abb:pd.DataFrame) -> str|None:
@@ -21,7 +21,7 @@ def get_teams() -> pd.DataFrame:
     abb = pd.read_csv('data/all_ids/all_teams_mapping.csv')
     df['Short Name'] = df['Team'].apply(match_abbreviation, abb=abb)
     # print(df[df.duplicated(subset=['Team ID'], keep=False)==True].sort_values('Team ID'))
-    df.rename(columns={'Team ID':'id', 'Team':'name', 'Short Name':'short_name'}, inplace=True)
+    df.rename(columns={'Team ID':'team_id', 'Team':'name', 'Short Name':'short_name'}, inplace=True)
     return df
 
 def get_players() -> pd.DataFrame:
@@ -30,7 +30,7 @@ def get_players() -> pd.DataFrame:
     df = df[df.duplicated(subset=['Player ID'], keep="last")==False]
     df = df[['Player ID', 'Player']]
     df['Player ID'] = pd.to_numeric(df['Player ID'], downcast="integer")
-    df.rename(columns={'Player ID':'id', 'Player':'name'}, inplace=True)
+    df.rename(columns={'Player ID':'player_id', 'Player':'name'}, inplace=True)
     return df
 
 def get_match_ids(year_from = None, tournament = None) -> pd.Series:
