@@ -3,9 +3,10 @@ import aiohttp
 from bs4 import BeautifulSoup
 from extract_kaggle_data import get_match_ids
 import logging
+import lxml
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s', level=logging.INFO)
 
 async def extract_player_game_data(row:str, game_id:int) -> dict:
     output = {
@@ -45,7 +46,7 @@ async def get_match_data(match_id:int, session:aiohttp.ClientSession, semaphore:
                 async with session.get(f'https://vlr.gg/{str(match_id)}', timeout=10) as resp:
                     if resp.status == 200:
                         logging.info(f'https://vlr.gg/{str(match_id)} request returned successfully')
-                        soup = BeautifulSoup(await resp.text(), 'html.parser')
+                        soup = BeautifulSoup(await resp.text(), 'lxml')
                         break
                     else:
                         logger.error(f'https://vlr.gg/{str(match_id)} returned status code {resp.status}')
@@ -163,9 +164,9 @@ async def main():
         tasks = [get_match_data(i, session, sem) for i in ids]
         results = await asyncio.gather(*tasks)
     
-    for r in results:
-        print(f'\n{r['matches'][0]['id']}\n')
-        print(f'Matches:\n{r['matches'][0]}\n')
+    # for r in results:
+    #     print(f'\n{r['matches'][0]['id']}\n')
+    #     print(f'Matches:\n{r['matches'][0]}\n')
         # print(f'Games:')
         # for g in r['games']:
         #     print(g)
